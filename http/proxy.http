@@ -1,0 +1,13 @@
+GET http://127.0.0.1:8082/testOne?id=1&ids=2
+Content-Type: application/json
+
+{
+  "test" :"value",
+  "test1" : "eqweq",
+  "rerqwe" : {
+    "rwrw" : 123
+  }
+}
+###
+
+GET http://127.0.0.1:8081/ping?id=1
