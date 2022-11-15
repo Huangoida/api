@@ -1,0 +1,5 @@
+Nacos:
+  Ip: "100.100.30.72"
+  Port: 31828
+  Scheme: "http"
+  ContextPath: "/nacos"
