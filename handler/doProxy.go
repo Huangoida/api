@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -101,7 +102,7 @@ func DoProxy(c *gin.Context) {
 	util.ResponseSuccess(c, res)
 }
 
-func dealWithSerialRequest(wg *sync.WaitGroup, c *gin.Context, api service.ApiStruct, parentResp *sync.Map, body map[string]interface{}, success chan map[string]interface{}, failed chan int) {
+func dealWithSerialRequest(wg *sync.WaitGroup, c *gin.Context, api service.ApiStruct, parentRespMap *sync.Map, body map[string]interface{}, success chan map[string]interface{}, failed chan int) {
 	defer wg.Done()
 
 	var contentType string
@@ -135,12 +136,36 @@ func dealWithSerialRequest(wg *sync.WaitGroup, c *gin.Context, api service.ApiSt
 			newBody = parseBody(parameter.Body, body)
 		}
 	}
+
+	if api.ParentApi != nil {
+		for _, parentApi := range api.ParentApi {
+			parentResp, exist := parentRespMap.Load(parentApi.ParentName)
+			if !exist {
+				setDefaultValue(parentApi, query, newBody)
+			}
+			parent, convertErr := parentResp.(map[string]interface{})
+			if !convertErr {
+				util.ResponseError(c, 500, constant.REQUSET_FAILED, "parse body failed")
+				failed <- 1
+				return
+			}
+			keyList := strings.Split(parentApi.Key, ".")
+			v := keyExist(parent, keyList, 0, len(keyList))
+			if v == nil {
+				setDefaultValue(parentApi, query, newBody)
+			} else {
+				SetValue(parentApi, query, newBody, v)
+			}
+		}
+	}
+
 	bodyByte, err := json.Marshal(newBody)
 	if err != nil {
 		util.ResponseError(c, 500, constant.REQUSET_FAILED, "parse body failed")
 		failed <- 1
 		return
 	}
+
 	subResp, code := util.Do(api.Method, url, header, query, bodyByte, contentType)
 	subMap := make(map[string]interface{})
 	err = json.Unmarshal([]byte(subResp), &subMap)
@@ -220,4 +245,52 @@ func parseBody(parameterBody, requestBody map[string]interface{}) map[string]int
 		parameterBody[key] = requestBody[key]
 	}
 	return parameterBody
+}
+
+func SetValue(parentApi service.ParentApiStruct, query map[string]string, body map[string]interface{}, value interface{}) {
+	if parentApi.ToType == "query" {
+		query[parentApi.ToKey] = util.Strval(value)
+	} else {
+		keyList := strings.Split(parentApi.ToKey, ".")
+		total := len(keyList)
+		buildBody(body, keyList, 0, total, value)
+	}
+}
+
+func setDefaultValue(parentApi service.ParentApiStruct, query map[string]string, body map[string]interface{}) {
+	SetValue(parentApi, query, body, parentApi.DefaultValue)
+}
+
+func buildBody(body map[string]interface{}, keyList []string, depth, total int, value interface{}) {
+	if depth == total-1 {
+		body[keyList[depth]] = value
+		return
+	}
+	mapValue := body[keyList[depth]]
+	if mapValue == nil {
+		body[keyList[depth]] = make(map[string]interface{})
+	}
+	mapValue = body[keyList[depth]]
+	valueType := util.GetValueType(mapValue)
+	if valueType == "map[string]interface {}" {
+		valueMap, err := mapValue.(map[string]interface{})
+		if !err {
+			return
+		}
+		buildBody(valueMap, keyList, depth+1, total, nil)
+	}
+	return
+}
+
+func keyExist(body map[string]interface{}, keyList []string, depth, total int) interface{} {
+	if depth == total-1 {
+		return body[keyList[depth]]
+	}
+	key := keyList[depth]
+	value := body[key]
+	valuemap, err := value.(map[string]interface{})
+	if !err {
+		return nil
+	}
+	return keyExist(valuemap, keyList, depth+1, total)
 }

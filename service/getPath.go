@@ -77,7 +77,7 @@ func GetPathFromMetadata(path string, method string) MetadataRequestStruct {
 			Require:      true,
 			Type:         "body",
 			Body: map[string]interface{}{
-				"test": nil,
+				"test": "12345",
 			},
 		}},
 		BatchIndex: 0,
@@ -112,6 +112,24 @@ func GetPathFromMetadata(path string, method string) MetadataRequestStruct {
 			DefaultValue: 0,
 			ToType:       "query",
 			ToKey:        "ewqe",
+		}, {
+			ParentName:   "ping",
+			Key:          "message",
+			DefaultValue: 0,
+			ToType:       "body",
+			ToKey:        "test1",
+		}, {
+			ParentName:   "ping",
+			Key:          "message1",
+			DefaultValue: 0,
+			ToType:       "body",
+			ToKey:        "test2",
+		}, {
+			ParentName:   "ping",
+			Key:          "message2.test.try",
+			DefaultValue: 0,
+			ToType:       "body",
+			ToKey:        "test3.test.try",
 		}},
 		Name: "ping1",
 	}
@@ -136,11 +154,14 @@ func GetPathFromMetadata(path string, method string) MetadataRequestStruct {
 			Require:      true,
 			Type:         "json",
 			Body: map[string]interface{}{
-				"rerqwe": nil,
+				"rerqwe": "123",
 			},
 		}},
 		BatchIndex: 0,
 		Name:       "postPing",
 	}
-	return MetadataRequestStruct{APIs: []ApiStruct{api, api2, api3}}
+
+	request := make(map[string]MetadataRequestStruct)
+	request["testOne"] = MetadataRequestStruct{APIs: []ApiStruct{api, api2, api3}}
+	return request["testOne"]
 }
