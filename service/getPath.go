@@ -86,8 +86,10 @@ func GetPathFromMetadata(path string, method string) MetadataRequestStruct {
 	failed := false
 
 	Method := "Get"
-	//这个URL不知道怎么写
-	url := "http://100.100.30.74:8080/v1/dsl/list"
+	//注意端口映射
+	url := "http://100.100.30.74:32346/v1/dsl/list"
+	//有一个大问题就是这里的token。这玩意要登录的.为了防止麻烦。直接写死一个。
+	header["ApiToken"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxNjA3MjkwNDY1ODQzOTQxMzc2LCJleHAiOjE2NzQ1NDQ5NjUsImlzcyI6Imp3dCJ9.n4aOKtwM-hvSDHYlvLqWIZN1udWNhbNT90c860ZFy6w"
 	query["Path"] = path
 	query["Method"] = method
 
