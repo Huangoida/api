@@ -7,6 +7,7 @@ require (
 	github.com/nacos-group/nacos-sdk-go v1.1.2
 	github.com/spf13/viper v1.14.0
 	github.com/valyala/fasthttp v1.41.0
+	gorm.io/gorm v1.24.4
 )
 
 require (
@@ -21,6 +22,8 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.12 // indirect

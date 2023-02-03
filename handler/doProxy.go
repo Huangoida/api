@@ -36,7 +36,12 @@ func DoProxy(c *gin.Context) {
 	}
 
 	// search path
-	metadataInfo := service.GetPathFromMetadata(request.URL.Path, request.Method)
+	metadataInfo, ok := service.GetPathFromMetadata(request.URL.Path, request.Method)
+
+	if !ok {
+		util.ResponseError(c, 400, constant.PARAMETER_INVALID, "api not found")
+		return
+	}
 
 	if len(metadataInfo.APIs) == 0 {
 		util.ResponseError(c, 404, constant.NOT_FOUND, fmt.Sprintf("%s %s not found", request.URL.Path, request.Method))
